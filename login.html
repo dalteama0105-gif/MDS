@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDS | Login</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+
+<body class="login-body flex-center">
+
+    <!-- Ambient Background -->
+    <div class="ambient-glow"></div>
+    <div class="ambient-glow"></div>
+
+    <div class="login-container glass-panel">
+        <h1 class="brand-title">MDS Platform</h1>
+        <p class="brand-subtitle">Multimedia Digital Signage</p>
+
+        <div id="error-box" class="error-msg"></div>
+
+        <form id="login-form">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="input-field" placeholder="Enter ID" required
+                    autocomplete="username">
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="input-field" placeholder="••••••••" required
+                    autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn-login" id="login-btn">
+                <span>Access System</span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('login-btn');
+            const errorBox = document.getElementById('error-box');
+            const originalText = btn.innerHTML;
+
+            // Loading State
+            btn.innerHTML = 'Authenticating...';
+            btn.style.opacity = '0.7';
+            errorBox.style.display = 'none';
+
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('php/auth.php?action=login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    btn.innerHTML = 'Success!';
+                    btn.style.background = 'var(--success)';
+
+                    // Redirect based on role
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 500);
+                } else {
+                    throw new Error(data.message || 'Login failed');
+                }
+            } catch (err) {
+                errorBox.textContent = err.message;
+                errorBox.style.display = 'block';
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                // Shake effect
+                document.querySelector('.login-container').animate([
+                    { transform: 'translateX(0)' },
+                    { transform: 'translateX(-5px)' },
+                    { transform: 'translateX(5px)' },
+                    { transform: 'translateX(0)' }
+                ], { duration: 300 });
+            }
+        });
+    </script>
+</body>
+
+</html>

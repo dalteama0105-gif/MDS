@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Notice Board — Control Panel (Web)</title>
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --panel: #fff;
+            --accent: #1e88e5;
+            --muted: #666;
+            --card-shadow: 0 6px 18px rgba(20, 30, 40, 0.08);
+        }
+
+        body {
+            font-family: Inter, system-ui, Arial;
+            margin: 16px;
+            background: linear-gradient(180deg, #e6f0ff 0%, var(--bg) 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 18px;
+        }
+
+        .panel {
+            background: var(--panel);
+            padding: 14px;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        header h1 {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px
+        }
+
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fff
+        }
+
+        .row {
+            display: flex;
+            gap: 12px
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px;
+            border: 1px solid #e2e6ef;
+            border-radius: 6px;
+            background: #fbfdff;
+            margin-bottom: 8px
+        }
+
+        .toolbar button {
+            border: 0;
+            background: transparent;
+            padding: 6px 8px;
+            border-radius: 6px;
+            cursor: pointer
+        }
+
+        .toolbar button:hover {
+            background: #f0f6ff
+        }
+
+        .editor {
+            min-height: 260px;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 6px;
+            background: #111;
+            color: #fff;
+            overflow: auto
+        }
+
+        .editor[contenteditable] {
+            outline: none
+        }
+
+        .controls {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 12px
+        }
+
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .field {
+            background: #fafbff;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #f0f3ff
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 0;
+            background: var(--accent);
+            color: #fff;
+            cursor: pointer
+        }
+
+        .btn.ghost {
+            background: #fff;
+            color: var(--accent);
+            border: 1px solid #dbe9ff
+        }
+
+        .preview {
+            height: 300px;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid #e6eefc;
+            background: #000;
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-inner {
+            max-width: 100%;
+            white-space: normal
+        }
+
+        .thumbs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .thumb {
+            width: 88px;
+            height: 60px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            overflow: hidden;
+            background: #111;
+            color: #fff;
+            padding: 6px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center
+        }
+
+        footer {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end
+        }
+
+        .small {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        input[type=range] {
+            width: 100%
+        }
+
+        .row-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px
+        }
+
+        /* scrolling animation placeholder, will be toggled by JS via style attribute */
+        @keyframes scrollup {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(-100%);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- LEFT: editor -->
+        <div class="panel">
+            <header><img src="" alt=""
+                    style="width:44px;height:44px;border-radius:8px;background:linear-gradient(45deg,var(--accent),#7ec8ff)">
+                <h1>Control Panel — Notice Board</h1>
+            </header>
+
+            <div class="controls">
+                <div>
+                    <label for="name">Name</label>
+                    <input id="name" type="text" placeholder="Notice Board 1" value="Notice Board 1" />
+                </div>
+                <div>
+                    <label for="desc">Description</label>
+                    <input id="desc" type="text" placeholder="Short description" value="Kelebihan" />
+                </div>
+            </div>
+
+            <label>Content</label>
+            <div class="toolbar" role="toolbar" aria-label="Editor toolbar">
+                <button onclick="exec('bold')" title="Bold"><b>B</b></button>
+                <button onclick="exec('italic')" title="Italic"><i>I</i></button>
+                <button onclick="exec('underline')" title="Underline"><u>U</u></button>
+                <button onclick="exec('insertUnorderedList')" title="Bullet list">• List</button>
+                <button onclick="exec('insertOrderedList')" title="Numbered list">1. List</button>
+                <input type="color" id="col" title="Text color" onchange="execColor(this.value)" />
+                <button onclick="insertImage()" title="Insert image">Image</button>
+                <button onclick="clearContent()" title="Clear">Clear</button>
+            </div>
+
+            <div id="editor" class="editor" contenteditable="true" spellcheck="false">
+                <h2 style="color:#ff5555;margin:0 0 8px">Kelebihan Sistem MDD</h2>
+                <ul style="margin:6px 0 0 18px;line-height:1.4">
+                    <li>Meningkatkan imej dan reputasi.</li>
+                    <li>Menarik perhatian umum.</li>
+                    <li>Memudahkan pengemaskinian maklumat.</li>
+                    <li>Memaparkan beberapa informasi dalam satu skrin.</li>
+                </ul>
+            </div>
+
+            <footer>
+                <button class="btn ghost" onclick="addThumbnail()">Preview ➕</button>
+                <button class="btn" onclick="saveAsJSON()">Save (Download JSON)</button>
+            </footer>
+        </div>
+
+        <!-- RIGHT: settings & preview -->
+        <aside class="right-col">
+            <div class="panel field">
+                <label>Duration</label>
+                <div class="row">
+                    <select id="durationType">
+                        <option value="cycle">Cycle</option>
+                        <option value="timer">Timer</option>
+                    </select>
+                    <input id="durationValue" type="number" min="1" value="1" title="Value (seconds or cycles)" />
+                </div>
+            </div>
+
+            <div class="panel field">
+                <label>Setting</label>
+                <div class="row">
+                    <label><input type="radio" name="displayType" value="static" checked /> Static</label>
+                    <label><input type="radio" name="displayType" value="scroll" /> Scroll</label>
+                </div>
+                <div style="margin-top:8px">
+                    <label class="small">Speed (for scroll)</label>
+                    <input id="speed" type="range" min="5" max="60" value="20" />
+                    <div class="small">Current: <span id="speedVal">20</span></div>
+                </div>
+                <div style="margin-top:8px">
+                    <label class="small">Published</label><br>
+                    <label class="row-between"><input id="published" type="checkbox" checked /> <span
+                            class="small">Yes</span></label>
+                </div>
+            </div>
+
+            <div class="panel field">
+                <label>Preview</label>
+                <div id="preview" class="preview">
+                    <div id="previewInner" class="preview-inner"></div>
+                </div>
+                <div style="margin-top:8px" class="row-between">
+                    <small class="small">Live preview (applies settings)</small>
+                    <div>
+                        <button class="btn ghost" onclick="applyPreview()">Apply</button>
+                        <button class="btn" onclick="openFullscreenPreview()">Open Full</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel field">
+                <label>Thumbnails</label>
+                <div id="thumbs" class="thumbs"></div>
+            </div>
+
+        </aside>
+    </div>
+
+    <script>
+        // small helper functions for execCommand-based editor
+        function exec(command, value = null) {
+            document.execCommand(command, false, value);
+            updatePreview();
+        }
+        function execColor(hex) {
+            exec('foreColor', hex);
+        }
+        function insertImage() {
+            const url = prompt('Image URL to insert');
+            if (url) exec('insertImage', url);
+        }
+        function clearContent() {
+            if (confirm('Clear editor content?')) document.getElementById('editor').innerHTML = '';
+            updatePreview();
+        }
+
+        // preview & scroll behavior
+        const editor = document.getElementById('editor');
+        const previewInner = document.getElementById('previewInner');
+        const preview = document.getElementById('preview');
+        const speedRange = document.getElementById('speed');
+        const speedVal = document.getElementById('speedVal');
+        speedRange.oninput = () => { speedVal.textContent = speedRange.value; };
+
+        function updatePreview() {
+            previewInner.innerHTML = editor.innerHTML;
+        }
+
+        // apply preview settings: scroll / static, speed, duration
+        function applyPreview() {
+            updatePreview();
+            const type = document.querySelector('input[name="displayType"]:checked').value;
+            // remove prior animation
+            previewInner.style.animation = '';
+            previewInner.style.transform = '';
+            previewInner.style.whiteSpace = 'normal';
+
+            if (type === 'scroll') {
+                // make content taller than container and animate upward
+                // speedRange value represents approximate seconds for the full scroll
+                const seconds = Math.max(5, parseInt(speedRange.value || 20));
+                // create animation applied inline
+                previewInner.style.display = 'inline-block';
+                previewInner.style.animation = `scrollup ${seconds}s linear infinite`;
+                // ensure overflow hidden in preview parent
+                preview.style.overflow = 'hidden';
+            } else {
+                // static: center content
+                previewInner.style.animation = '';
+                previewInner.style.display = 'block';
+                preview.style.overflow = 'auto';
+            }
+        }
+
+        // create a small thumbnail preview (cloned content, scaled)
+        function addThumbnail() {
+            updatePreview();
+            const t = document.createElement('div');
+            t.className = 'thumb';
+            t.innerHTML = previewInner.innerHTML || '<em>(empty)</em>';
+            document.getElementById('thumbs').appendChild(t);
+        }
+
+        // Save as JSON file (you can replace the download with a fetch POST to your server)
+        function saveAsJSON() {
+            const payload = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('desc').value,
+                content: editor.innerHTML,
+                duration: {
+                    type: document.getElementById('durationType').value,
+                    value: parseInt(document.getElementById('durationValue').value || 1)
+                },
+                display: {
+                    type: document.querySelector('input[name="displayType"]:checked').value,
+                    speed: parseInt(document.getElementById('speed').value),
+                },
+                published: document.getElementById('published').checked,
+                savedAt: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = (payload.name || 'notice') + '.json'; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // full window preview
+        function openFullscreenPreview() {
+            updatePreview();
+            const w = window.open('', '_blank');
+            w.document.write(`
+      <title>Preview — ${document.getElementById('name').value}</title>
+      <style>body{margin:0;background:#000;color:#fff;font-family:Arial} .content{padding:30px} </style>
+      <div class="content">${previewInner.innerHTML}</div>
+    `);
+            w.document.close();
+        }
+
+        // live update on typing
+        editor.addEventListener('input', () => { updatePreview(); });
+
+        // initial render
+        updatePreview();
+    </script>
+</body>
+
+</html>

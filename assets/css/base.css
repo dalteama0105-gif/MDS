@@ -1,0 +1,60 @@
+:root {
+    /* Premium Color Palette (HSL) */
+    --hue: 220;
+    --sat: 70%;
+    
+    --bg-dark: hsl(var(--hue), 20%, 8%);
+    --bg-card: hsl(var(--hue), 25%, 12%);
+    --bg-overlay: hsla(var(--hue), 25%, 12%, 0.7);
+    
+    --text-primary: hsl(var(--hue), 10%, 95%);
+    --text-secondary: hsl(var(--hue), 10%, 70%);
+    --text-muted: hsl(var(--hue), 10%, 50%);
+    
+    --accent: hsl(190, 80%, 50%);         /* Cyan-ish */
+    --accent-glow: hsla(190, 80%, 50%, 0.3);
+    
+    --error: hsl(0, 70%, 50%);
+    --success: hsl(140, 70%, 45%);
+
+    /* Effects */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --backdrop-blur: 12px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    overflow: hidden; /* App-like feel */
+    height: 100vh;
+    width: 100vw;
+}
+
+a { text-decoration: none; color: inherit; }
+button, input, select { font-family: inherit; }
+
+/* Utility Classes */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--backdrop-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 12px;
+}
+
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.hidden { display: none !important; }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

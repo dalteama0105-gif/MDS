@@ -1,0 +1,22 @@
+/* Mode toggling */
+.active-mode {
+    display: block !important;
+    width: 100%;
+    height: 100%;
+}
+
+.hidden-mode {
+    display: none !important;
+}
+
+/* Specific styling for modes */
+#view-text {
+    background: radial-gradient(circle, #222, #000);
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+iframe {
+    border: none;
+}
