@@ -1,4 +1,18 @@
-/* Control Panel Overlay Styles */
+/* Control Panel Overlay Styles - Glassmorphism Redesign */
+
+:root {
+    --glass-bg: rgba(20, 20, 20, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --accent-color: #3498db;
+    --accent-gradient: linear-gradient(135deg, #3498db, #8e44ad);
+    --danger-color: #e74c3c;
+    --success-color: #2ecc71;
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --card-hover-bg: rgba(255, 255, 255, 0.07);
+}
 
 #control-panel {
     position: fixed;
@@ -6,13 +20,14 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.85);
+    /* Darker backdrop for focus */
     z-index: 9999;
     display: flex;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(5px);
-    transition: opacity 0.3s ease;
+    backdrop-filter: blur(8px);
+    transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 #control-panel.hidden {
@@ -23,155 +38,243 @@
 
 .panel-content {
     width: 90vw;
-    max-width: 900px;
+    max-width: 960px;
     max-height: 85vh;
-    background: var(--bg-card);
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    border-radius: 12px;
-    padding: 2rem;
+    background: var(--glass-bg);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    /* Increased border visibility */
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 20px 50px rgba(0, 0, 0, 0.7);
+    /* Stronger shadow + inner stroke */
+    border-radius: 16px;
+    padding: 0;
+    /* Reset padding for header/body split */
     color: var(--text-primary);
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-/* Custom Scrollbar for Panel */
-.panel-content::-webkit-scrollbar {
-    width: 10px;
-}
-
-.panel-content::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-}
-
-.panel-content::-webkit-scrollbar-thumb {
-    background: var(--accent);
-    border-radius: 5px;
-}
-
-.panel-content::-webkit-scrollbar-thumb:hover {
-    background: #2980b9;
-}
-
-.panel-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 1rem;
+    /* Flex layout for header/body */
+    flex-direction: column;
+    overflow: hidden;
+    /* Clip rounded corners */
+    animation: panelSlideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.panel-title {
-    font-size: 1.5rem;
-    font-weight: bold;
+@keyframes panelSlideUp {
+    from {
+        transform: translateY(20px) scale(0.98);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
 }
 
-.panel-status {
-    font-family: monospace;
-    color: var(--accent);
+/* Body Content */
+.tab-content {
+    /* Initially hidden handled by display:none in reset */
+    padding: 3rem;
+    overflow-y: auto;
+    flex: 1;
+    /* Take remaining height */
+    animation: fadeIn 0.4s ease;
 }
 
+.tab-content.active {
+    display: block;
+}
+
+/* Custom Scrollbar for Tab Content */
+.tab-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tab-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.tab-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.tab-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Grid Controls */
 .grid-controls {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    /* Slightly wider cards */
+    gap: 2.5rem;
+    /* Wider gap */
 }
 
+/* Control Cards with Icons & Active States */
 .control-card {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 1.5rem;
-    border-radius: 8px;
-    text-align: center;
+    background: var(--card-bg);
+    padding: 2.5rem 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
     cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid transparent;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .control-card:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-    border-color: var(--accent);
+    background: var(--card-hover-bg);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.control-card:active {
+    transform: scale(0.98) translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.control-card.active-card {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 1px var(--accent-color), 0 10px 30px rgba(52, 152, 219, 0.2);
+    background: rgba(52, 152, 219, 0.05);
+}
+
+.control-card.active-card h3 {
+    color: var(--accent-color);
+}
+
+/* CSS Icons using Before pseudo-element */
+.control-card h3::before {
+    margin-right: 10px;
+    font-size: 1.2rem;
+    vertical-align: middle;
+    filter: grayscale(100%);
+    transition: filter 0.3s;
+}
+
+.control-card:hover h3::before,
+.control-card.active-card h3::before {
+    filter: none;
+}
+
+/* Specific Icons based on content (using nth-child trick or JS classes would be better, but we'll try strict ordering or data-icon in JS) 
+   Actually, let's keep it simple and just use emojis in HTML or CSS content if we can target them.
+   Since we can't easily target by text content in pure CSS without classes, 
+   we will rely on JS to add .icon-video, .icon-web, etc. OR just insert them in HTML.
+   
+   Let's add classes in JS for these icons. For now, general styling:
+*/
+.icon-video::before {
+    content: '▶';
+    color: #e74c3c;
+}
+
+.icon-web::before {
+    content: '🌐';
+    color: #3498db;
+}
+
+.icon-text::before {
+    content: '📝';
+    color: #f1c40f;
+}
+
+.icon-cam::before {
+    content: '📷';
+    color: #9b59b6;
+}
+
+.icon-slides::before {
+    content: '🖼';
+    color: #2ecc71;
 }
 
 .control-card h3 {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+    /* Slightly larger */
+    color: #fff;
+    display: flex;
+    align-items: center;
 }
 
 .control-card p {
-    font-size: 0.8rem;
-    color: var(--text-muted);
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
 }
 
+/* Inputs & Form Elements */
 .input-row {
     margin-top: 1rem;
     display: flex;
     gap: 10px;
+    align-items: stretch;
 }
 
 .input-dark {
     flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--glass-border);
-    padding: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 14px;
     color: white;
-    border-radius: 4px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s;
 }
 
+.input-dark:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* Buttons */
 .btn-action {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
+    background: var(--card-bg);
+    /* Default fallback */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
     cursor: pointer;
-    font-weight: bold;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .btn-action:hover {
-    filter: brightness(1.1);
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
 }
 
-.presets-area {
-    margin-top: 1rem;
-    border-top: 1px solid var(--glass-border);
-    padding-top: 1rem;
-}
-
-/* Tabs */
-.panel-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--glass-border);
-    margin-bottom: 1.5rem;
-}
-
-.tab-btn {
-    background: transparent;
+.btn-action[style*="background: #27ae60"],
+.btn-action[style*="background: #27ae60"] {
+    /* Primary Button override */
+    background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
     border: none;
-    color: var(--text-muted);
-    padding: 10px 20px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    border-bottom: 2px solid transparent;
+    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
 }
 
-.tab-btn:hover {
-    color: #fff;
-}
-
-.tab-btn.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
+.btn-action:active {
+    transform: translateY(1px);
 }
 
 .tab-content {
     display: none;
-    animation: fadeIn 0.3s ease;
+    animation: fadeIn 0.4s ease;
 }
 
 .tab-content.active {
@@ -181,7 +284,7 @@
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(5px);
+        transform: translateY(10px);
     }
 
     to {
@@ -192,7 +295,59 @@
 
 .shortcut-hint {
     text-align: center;
-    margin-top: 2rem;
+    padding: 1.5rem;
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
+    border-top: 1px solid var(--glass-border);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* List Items */
+.list-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.list-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Sub-nav Buttons (Pill style) */
+.content-subnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.subtab-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.subtab-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.subtab-btn.active {
+    background: rgba(52, 152, 219, 0.2);
+    color: var(--accent-color);
+    border-color: rgba(52, 152, 219, 0.3);
+    font-weight: 600;
 }

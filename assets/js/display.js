@@ -26,7 +26,7 @@ class MDSDisplay {
 
         this.initClock();
         this.initKeyboardShortcuts();
-        // this.initNoticeScroller();
+        this.initNoticeScroller();
         this.startSidebarSlideshow(); // Start sidebar image rotation
         this.initLists(); // Render saved content in control panel
         this.loadHeaderConfig(); // Restore header settings
@@ -149,16 +149,51 @@ class MDSDisplay {
         const config = JSON.parse(localStorage.getItem('mds_banner_config') || '{}');
         const banner = document.getElementById('banner-zone');
 
+        // Restore Background
         if (config.bg) {
             banner.style.backgroundImage = `url('${config.bg}')`;
             banner.style.backgroundRepeat = 'no-repeat';
-            banner.style.backgroundSize = 'cover'; // Or 'contain' if they want full fit? Cover is safer for filling 16:4
+            banner.style.backgroundSize = 'cover';
             banner.style.backgroundPosition = 'center';
-            banner.innerHTML = ''; // Ensure no text
 
             if (document.getElementById('banner-bg-url')) {
                 document.getElementById('banner-bg-url').value = config.bg;
             }
+        }
+
+        // Restore Mode
+        if (config.mode) {
+            this.setBannerMode(config.mode, false);
+            const radio = document.querySelector(`input[name="banner-mode"][value="${config.mode}"]`);
+            if (radio) radio.checked = true;
+        } else {
+            // Default to standard (text + bg)
+            this.setBannerMode('standard', false);
+        }
+    }
+
+    setBannerMode(mode, save = true) {
+        const textControls = document.getElementById('banner-text-controls');
+        const banner = document.getElementById('banner-zone');
+
+        if (mode === 'image-only') {
+            if (textControls) textControls.classList.add('hidden');
+            banner.innerHTML = ''; // Hide text
+        } else {
+            if (textControls) textControls.classList.remove('hidden');
+            // Restore text if available / needed, or let addItem handle it. 
+            // Ideally we should reload the last added banner text here if we just switched back.
+            // For now, user can click "Show" on a saved banner item.
+            // Or we can check if there's a saved text in config? 
+            // Let's just clear innerHTML to be safe, user selects text again.
+            // Actually, if we switch to text mode, we probably want to see the text.
+            // But valid point, we don't track "current active text" separately.
+        }
+
+        if (save) {
+            const config = JSON.parse(localStorage.getItem('mds_banner_config') || '{}');
+            config.mode = mode;
+            localStorage.setItem('mds_banner_config', JSON.stringify(config));
         }
     }
 
@@ -442,7 +477,7 @@ class MDSDisplay {
      */
     toggleInput(type) {
         // Hide all other inputs first
-        document.querySelectorAll('.input-row').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.mode-input-row').forEach(el => el.classList.add('hidden'));
 
         const inputDiv = document.getElementById(`input-${type}`);
         if (inputDiv) inputDiv.classList.remove('hidden');
@@ -493,17 +528,33 @@ class MDSDisplay {
 
     // --- Sidebar Slideshow Logic ---
     startSidebarSlideshow() {
-        // Independent from main slideshow
+        // 1. Load from LocalStorage
+        const saved = localStorage.getItem('mds_sidebar_playlist');
+        if (saved) {
+            this.sidebarPlaylist = JSON.parse(saved);
+        } else {
+            // Default Fallback
+            this.sidebarPlaylist = [
+                'https://images.unsplash.com/photo-1516387938699-a93567ec168e?q=80&w=600&auto=format&fit=crop'
+            ];
+        }
+
         const imgEl = document.querySelector('#sidebar-image img');
-        if (!imgEl || this.imagePlaylist.length === 0) return;
+        if (!imgEl || this.sidebarPlaylist.length === 0) return;
 
         let sidebarIndex = 0;
 
-        setInterval(() => {
-            sidebarIndex = (sidebarIndex + 1) % this.imagePlaylist.length;
-            const nextImg = this.imagePlaylist[sidebarIndex];
+        // Clear existing interval if restarting
+        if (this.sidebarInterval) clearInterval(this.sidebarInterval);
 
-            // Simple fade effect could be added here via CSS classes
+        this.sidebarInterval = setInterval(() => {
+            // Re-check playlist in case of updates
+            if (this.sidebarPlaylist.length === 0) return;
+
+            sidebarIndex = (sidebarIndex + 1) % this.sidebarPlaylist.length;
+            const nextImg = this.sidebarPlaylist[sidebarIndex];
+
+            // Simple fade effect
             imgEl.style.opacity = '0.5';
             setTimeout(() => {
                 imgEl.src = nextImg;
@@ -513,10 +564,94 @@ class MDSDisplay {
         }, 7000); // Rotate every 7 seconds
     }
 
+    // --- Sidebar Management ---
+    addSidebarImage() {
+        const input = document.getElementById('sidebar-url');
+        const url = input.value.trim();
+        if (!url) return;
+
+        this.pushToSidebarPlaylist(url);
+        input.value = '';
+    }
+
+    uploadSidebarImage() {
+        const input = document.getElementById('sidebar-upload');
+        if (input.files && input.files[0]) {
+            const formData = new FormData();
+            formData.append('mediaFile', input.files[0]);
+
+            fetch('php/upload_media.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        this.pushToSidebarPlaylist(data.file_path);
+                        alert("Sidebar Image Added!");
+                    } else {
+                        alert("Upload Failed: " + data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Upload Error");
+                });
+        }
+    }
+
+    pushToSidebarPlaylist(url) {
+        if (!this.sidebarPlaylist) this.sidebarPlaylist = [];
+        this.sidebarPlaylist.push(url);
+        this.saveSidebarPlaylist();
+        this.renderSidebarList();
+        this.startSidebarSlideshow(); // Restart to include new image immediately
+    }
+
+    deleteSidebarImage(index) {
+        if (confirm("Remove this image from sidebar rotation?")) {
+            this.sidebarPlaylist.splice(index, 1);
+            this.saveSidebarPlaylist();
+            this.renderSidebarList();
+            // If empty, standard restart will revert to default or stops?
+            // startSidebarSlideshow handles empty check.
+            this.startSidebarSlideshow();
+        }
+    }
+
+    saveSidebarPlaylist() {
+        localStorage.setItem('mds_sidebar_playlist', JSON.stringify(this.sidebarPlaylist));
+    }
+
+    renderSidebarList() {
+        const container = document.getElementById('list-sidebar');
+        if (!container) return; // Might not be on sidebar page
+
+        // Ensure we have latest
+        const saved = localStorage.getItem('mds_sidebar_playlist');
+        const items = saved ? JSON.parse(saved) : (this.sidebarPlaylist || []);
+
+        if (items.length === 0) {
+            container.innerHTML = '<div style="color:#666; font-size:0.8rem;">No images in rotation.</div>';
+            return;
+        }
+
+        container.innerHTML = items.map((url, idx) => `
+            <div style="background:rgba(255,255,255,0.1); padding:5px; border-radius:4px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+                    <img src="${url}" style="width:30px; height:30px; object-fit:cover; border-radius:2px;">
+                    <span style="font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px;">${url.split('/').pop()}</span>
+                </div>
+                <button class="btn-action" style="padding:2px 8px; font-size:0.7rem; background:#c0392b;" 
+                    onclick="mds.deleteSidebarImage(${idx})">×</button>
+            </div>
+        `).join('');
+    }
+
     setMode(mode, source = '') {
         console.log(`Switching to mode: ${mode}`);
 
-        // 1. Hide all
+        // 1. Hide all Content
         document.querySelectorAll('#main-zone .content-wrapper').forEach(el => {
             el.classList.add('hidden-mode');
             el.classList.remove('active-mode');
@@ -526,7 +661,14 @@ class MDSDisplay {
         this.stopCamera();
         this.stopSlideshow();
 
-        // 3. Activate specific
+        // 3. Highlight Active Card in Control Panel
+        document.querySelectorAll('.control-card').forEach(card => card.classList.remove('active-card'));
+        const activeCard = document.querySelector(`.control-card[onclick*="'${mode}'"]`) ||
+            document.querySelector(`.control-card[onclick*='"${mode}"']`) ||
+            document.getElementById(`card-${mode}`); // Fallback if we add IDs
+        if (activeCard) activeCard.classList.add('active-card');
+
+        // 3b. Activate specific mode
         switch (mode) {
             case 'video':
                 const videoEl = document.getElementById('view-video');
@@ -552,29 +694,30 @@ class MDSDisplay {
                 if (textEl) {
                     const displayText = source || "Welcome to MDS Digital Signage";
 
-                    // SCROLLING LOGIC
-                    textEl.innerHTML = ''; // Clear raw text
+                    // Clear existing
+                    textEl.innerHTML = '';
                     textEl.classList.remove('hidden-mode');
                     textEl.classList.add('active-mode');
 
-                    // Create scroll wrapper
+                    // Create Scrolling Structure
                     const wrapper = document.createElement('div');
                     wrapper.className = 'text-scroll-wrapper';
 
-                    // Create content blocks (Double for loop)
-                    const contentDiv1 = document.createElement('div');
-                    contentDiv1.className = 'text-scroll-content';
-                    contentDiv1.textContent = displayText;
+                    // Content 1
+                    const content1 = document.createElement('div');
+                    content1.className = 'text-scroll-content';
+                    content1.innerText = displayText;
 
-                    const contentDiv2 = document.createElement('div');
-                    contentDiv2.className = 'text-scroll-content';
-                    contentDiv2.textContent = displayText;
+                    // Content 2 (Duplicate for seamless loop)
+                    const content2 = document.createElement('div');
+                    content2.className = 'text-scroll-content';
+                    content2.innerText = displayText;
 
-                    wrapper.appendChild(contentDiv1);
-                    wrapper.appendChild(contentDiv2);
+                    wrapper.appendChild(content1);
+                    wrapper.appendChild(content2);
                     textEl.appendChild(wrapper);
 
-                    console.log('Text mode activated with scrolling:', displayText);
+                    console.log('Text mode activated:', displayText);
                 }
                 break;
 
@@ -659,27 +802,94 @@ class MDSDisplay {
         }
     }
 
+    switchMediaCategory(category) {
+        this.currentMediaCategory = category;
+
+        // Update Tabs UI (Simple visual toggle, ideally use IDs or data-attrs)
+        // Reset all active
+        const tabs = document.querySelectorAll('#tab-media .subtab-btn');
+        tabs.forEach(btn => btn.classList.remove('active'));
+
+        // Activate clicked (simplistic matching by text or order, let's match by onclick)
+        // Or simpler: pass 'this' from HTML. But implementation plan didn't specify.
+        // Let's match by inner text or just use index? Video=0, Header=1, Banner=2
+        const map = { 'video': 0, 'header': 1, 'banner': 2 };
+        if (tabs[map[category]]) tabs[map[category]].classList.add('active');
+
+        this.refreshMediaList();
+    }
+
     refreshMediaList() {
         const container = document.getElementById('media-list');
         container.innerHTML = '<div style="color:#888;">Loading...</div>';
+
+        // Default category if not set
+        if (!this.currentMediaCategory) this.currentMediaCategory = 'video';
 
         fetch('php/upload_media.php')
             .then(res => res.json())
             .then(data => {
                 container.innerHTML = '';
                 if (data.success && data.files.length > 0) {
-                    data.files.forEach(file => {
+
+                    // Filter based on category
+                    const filtered = data.files.filter(file => {
+                        const ext = file.name.split('.').pop().toLowerCase();
+                        const isVideo = ['mp4', 'webm', 'mkv'].includes(ext);
+                        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+
+                        if (this.currentMediaCategory === 'video') return isVideo;
+                        if (['header', 'banner'].includes(this.currentMediaCategory)) return isImage;
+                        return true;
+                    });
+
+                    if (filtered.length === 0) {
+                        container.innerHTML = '<div style="color: #666; font-size: 0.9rem;">No media found for this category.</div>';
+                        return;
+                    }
+
+                    filtered.forEach(file => {
                         const div = document.createElement('div');
                         div.className = 'media-item';
                         div.style.cssText = 'background: #222; padding: 5px; border-radius: 4px; cursor: pointer; border: 1px solid #444; overflow: hidden; font-size: 0.8rem; text-align: center;';
+
+                        // Add thumbnail if image?
+                        // For now just name
                         div.textContent = file.name;
-                        div.onclick = () => this.playMedia(file.path, file.name);
+
+                        div.onclick = () => this.handleMediaClick(file.path, file.name);
                         container.appendChild(div);
                     });
                 } else {
                     container.innerHTML = '<div style="color: #666; font-size: 0.9rem;">No media found.</div>';
                 }
             });
+    }
+
+    handleMediaClick(path, name) {
+        // Context-aware action
+        if (this.currentMediaCategory === 'header') {
+            if (confirm(`Set '${name}' as Header Background?`)) {
+                this.setHeaderBg(path);
+            }
+        } else if (this.currentMediaCategory === 'banner') {
+            if (confirm(`Set '${name}' as Banner Background?`)) {
+                this.setBannerBg(path);
+                // Switch to Image mode if not already?
+                // Helpful UX:
+                const config = JSON.parse(localStorage.getItem('mds_banner_config') || '{}');
+                if (config.mode !== 'image-only') {
+                    if (confirm("Switch Banner to Image-Only mode to see this?")) {
+                        this.setBannerMode('image-only');
+                        const radio = document.querySelector(`input[name="banner-mode"][value="image-only"]`);
+                        if (radio) radio.checked = true;
+                    }
+                }
+            }
+        } else {
+            // Video (Standard playback)
+            this.playMedia(path, name);
+        }
     }
 
     playMedia(path, name) {
@@ -701,7 +911,9 @@ class MDSDisplay {
         } else {
             alert("Preview not supported for this file type yet.");
         }
-        this.toggleControlPanel();
+        // Don't close panel automatically for background setting, but for playback yes?
+        // kept behavior for playMedia
+        // this.toggleControlPanel(); 
     }
 
     // --- Generic Content List Logic ---

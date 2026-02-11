@@ -1,0 +1,30 @@
+Category,Sub-Category,Item,Status,Notes
+Backend,Database,Connection (db.php),Implemented,Uses PDO
+Backend,Database,Setup Script (setup_database.php),Implemented,Creates users/layouts/media tables
+Backend,Authentication,Login Logic (auth.php),Implemented,Session management
+Backend,Authentication,Role-Based Redirects,Implemented,Admin vs User
+Backend,API,Proxy Server (proxy.php),Implemented,Handles CORS for external sites
+Backend,API,Media Upload (upload_media.php),Implemented,Secure file handling
+Frontend,Viewer Layout,Grid System (CSS Grid),Implemented,Flexible Main/Banner sizing
+Frontend,Viewer Layout,Header Zone,Implemented,Customizable BG/Align
+Frontend,Viewer Layout,Main Zone,Implemented,Auto-sizing + Content Fill
+Frontend,Viewer Layout,Banner Zone,Implemented,Custom BG/Color support
+Frontend,Viewer Layout,Sidebar Zone,Implemented,Image + Static Notices
+Frontend,Viewer Layout,Footer & Ticker,Implemented,Scrolling message board
+Frontend,Display Modes,Video Player,Implemented,Looping + Playlist logic
+Frontend,Display Modes,Website Frame,Implemented,Sandbox + Proxy support
+Frontend,Display Modes,Text Announcement,Implemented,Fixed duplication bug
+Frontend,Display Modes,Camera Mirror,Implemented,Flipped transform
+Frontend,Display Modes,Slideshow,Implemented,Cycle logic
+Frontend,Control Panel,Overlay UI (Alt+C),Implemented,Hidden access
+Frontend,Control Panel,Tab System,Implemented,Modes/Content/Media/Presets/System
+Frontend,Control Panel,Mode Switching,Implemented,Live update
+Frontend,Control Panel,Media Picker/Upload,Implemented,Integrated
+Frontend,Control Panel,Preset Management,Implemented,Save/Load slots 1-9
+Frontend,Control Panel,Header Config,Implemented,BG Image/Align/Mode
+Frontend,Control Panel,Banner Config,Implemented,BG Image support
+Frontend,Admin Dashboard,Interface (admin.php),Implemented,User management list
+Frontend,Admin Dashboard,Add User,Implemented,
+Frontend,Admin Dashboard,Delete User,Implemented,
+System,Security,Session Protection,Implemented,Redirects if not logged in
+System,Security,SQL Injection Prevention,Implemented,Prepared statements

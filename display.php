@@ -159,22 +159,27 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="grid-controls">
                     <!-- Mode Switchers -->
                     <div class="control-card" onclick="window.changeMode('video')">
-                        <h3>Video Mode</h3>
+                        <h3 class="icon-video">Video Mode</h3>
                         <p>Play standard loop</p>
                     </div>
+                    <div class="control-card" onclick="window.changeMode('slides')">
+                        <h3 class="icon-slides">Slideshow Mode</h3>
+                        <p>Cycle background images</p>
+                    </div>
                     <div class="control-card" onclick="mds.toggleInput('website')">
-                        <h3>Website Mode</h3>
+                        <h3 class="icon-web">Website Mode</h3>
                         <p>Embed external URL</p>
-                        <div class="input-row hidden" id="input-website" onclick="event.stopPropagation()">
+                        <div class="input-row mode-input-row hidden" id="input-website"
+                            onclick="event.stopPropagation()">
                             <input type="text" class="input-dark" id="val-website" placeholder="https://example.com"
                                 value="https://en.wikipedia.org">
                             <button class="btn-action" onclick="mds.submitMode('website')">GO</button>
                         </div>
                     </div>
                     <div class="control-card" onclick="mds.toggleInput('text')">
-                        <h3>Text Mode</h3>
+                        <h3 class="icon-text">Text Mode</h3>
                         <p>Show announcement</p>
-                        <div class="input-row hidden" id="input-text" onclick="event.stopPropagation()"
+                        <div class="input-row mode-input-row hidden" id="input-text" onclick="event.stopPropagation()"
                             style="flex-direction: column; align-items: stretch;">
                             <textarea class="input-dark" id="val-text" placeholder="Enter Message" rows="3"
                                 style="width: 100%; margin-bottom: 5px; resize: vertical;">HELLO WORLD</textarea>
@@ -182,7 +187,7 @@ if (!isset($_SESSION['user_id'])) {
                         </div>
                     </div>
                     <div class="control-card" onclick="window.changeMode('camera')">
-                        <h3>Camera Mode</h3>
+                        <h3 class="icon-cam">Camera Mode</h3>
                         <p>Live feed (Mirror)</p>
                     </div>
                 </div>
@@ -197,6 +202,7 @@ if (!isset($_SESSION['user_id'])) {
                     <button class="subtab-btn" onclick="mds.switchContentPage('banner')">Banner</button>
                     <button class="subtab-btn" onclick="mds.switchContentPage('ticker')">Message Board</button>
                     <button class="subtab-btn" onclick="mds.switchContentPage('notice')">Sidebar Notice</button>
+                    <button class="subtab-btn" onclick="mds.switchContentPage('sidebar')">Sidebar Images</button>
                     <button class="subtab-btn" onclick="mds.switchContentPage('text')">Quick Announce</button>
                 </div>
 
@@ -277,18 +283,62 @@ if (!isset($_SESSION['user_id'])) {
                 <div id="page-banner" class="content-page hidden">
                     <div
                         style="background: rgba(255,255,255,0.05); padding: 15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
-                        <h3 style="margin-top:0; color:#ddd;">Banner Text</h3>
-                        <p style="font-size:0.8rem; color:#888;">Manage large text displayed in the center banner zone.
-                        </p>
 
-                        <div class="input-row" style="margin-top:15px;">
-                            <textarea class="input-dark" id="edit-banner" placeholder="New Banner Text..." rows="3"
-                                style="resize:vertical;"></textarea>
-                            <button class="btn-action" onclick="mds.addItem('banner')">Add</button>
+                        <!-- Banner Mode Switch -->
+                        <div
+                            style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+                            <label style="font-size:0.8rem; color:#aaa; display:block; margin-bottom:10px;">Banner
+                                Mode</label>
+                            <div style="display:flex; gap:15px;">
+                                <label style="display:flex; align-items:center; cursor:pointer;">
+                                    <input type="radio" name="banner-mode" value="standard" checked
+                                        onchange="mds.setBannerMode('standard')" style="margin-right:8px;">
+                                    <span style="color:#ddd; font-size:0.9rem;">Text + Background</span>
+                                </label>
+                                <label style="display:flex; align-items:center; cursor:pointer;">
+                                    <input type="radio" name="banner-mode" value="image-only"
+                                        onchange="mds.setBannerMode('image-only')" style="margin-right:8px;">
+                                    <span style="color:#ddd; font-size:0.9rem;">Image/GIF Only</span>
+                                </label>
+                            </div>
                         </div>
-                        <div id="list-banner"
-                            style="margin-top:15px; max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:5px;">
+
+                        <!-- Text Controls (Wrapper for toggling) -->
+                        <div id="banner-text-controls">
+                            <h3 style="margin-top:0; color:#ddd;">Banner Text</h3>
+                            <p style="font-size:0.8rem; color:#888;">Manage large text displayed in the center banner
+                                zone.</p>
+
+                            <div class="input-row" style="margin-top:15px;">
+                                <textarea class="input-dark" id="edit-banner" placeholder="New Banner Text..." rows="3"
+                                    style="resize:vertical;"></textarea>
+                                <button class="btn-action" onclick="mds.addItem('banner')">Add</button>
+                            </div>
+                            <div id="list-banner"
+                                style="margin-top:15px; max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:5px;">
+                            </div>
                         </div>
+
+                        <!-- Background Image Control (Shared) -->
+                        <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                            <label style="font-size:0.8rem; color:#aaa; display:block; margin-bottom:5px;">Background
+                                Image / GIF</label>
+
+                            <!-- Upload Input -->
+                            <div
+                                style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <input type="file" id="banner-bg-upload" accept="image/*"
+                                    style="font-size: 0.8rem; color: #ccc;">
+                                <button class="btn-action" onclick="mds.uploadBannerBg()">Upload & Set</button>
+                            </div>
+
+                            <p style="font-size:0.75rem; color:#666;">Or enter URL manually:</p>
+                            <div class="input-row">
+                                <input type="text" class="input-dark" id="banner-bg-url" placeholder="Image URL...">
+                                <button class="btn-action" onclick="mds.setBannerBg()">Set URL</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -368,6 +418,39 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
                 </div>
 
+                <!-- PAGE: Sidebar Manager -->
+                <div id="page-sidebar" class="content-page hidden">
+                    <div
+                        style="background: rgba(255,255,255,0.05); padding: 15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                        <h3 style="margin-top:0; color:#ddd;">Sidebar Images</h3>
+                        <p style="font-size:0.8rem; color:#888;">Manage images rotating in the sidebar.</p>
+
+                        <!-- Add New -->
+                        <div style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px;">
+                            <label style="font-size:0.8rem; color:#aaa; display:block; margin-bottom:5px;">Add New
+                                Image</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="file" id="sidebar-upload" accept="image/*"
+                                    style="font-size: 0.8rem; color: #ccc;">
+                                <button class="btn-action" onclick="mds.uploadSidebarImage()">Upload</button>
+                            </div>
+                            <div class="input-row">
+                                <input type="text" class="input-dark" id="sidebar-url"
+                                    placeholder="Or enter Image URL...">
+                                <button class="btn-action" onclick="mds.addSidebarImage()">Add URL</button>
+                            </div>
+                        </div>
+
+                        <!-- List -->
+                        <label
+                            style="font-size:0.8rem; color:#aaa; display:block; margin-top:15px; margin-bottom: 5px;">Current
+                            Playlist:</label>
+                        <div id="list-sidebar"
+                            style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:5px;">
+                        </div>
+                    </div>
+                </div>
+
                 <?php if ($_SESSION['role'] === 'admin'): ?>
                     <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 10px;">
                         <details>
@@ -389,6 +472,14 @@ if (!isset($_SESSION['user_id'])) {
 
             <!-- TAB 3: MEDIA LIBRARY -->
             <div id="tab-media" class="tab-content">
+                <div
+                    style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                    <!-- Category Filters -->
+                    <button class="subtab-btn active" onclick="mds.switchMediaCategory('video')">Video</button>
+                    <button class="subtab-btn" onclick="mds.switchMediaCategory('header')">Header BG</button>
+                    <button class="subtab-btn" onclick="mds.switchMediaCategory('banner')">Banner BG</button>
+                </div>
+
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                     <input type="file" id="media-upload-input" style="display: none;" onchange="mds.handleUpload(this)">
                     <button class="btn-action" onclick="document.getElementById('media-upload-input').click()">+ Upload
